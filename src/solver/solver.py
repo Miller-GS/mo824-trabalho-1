@@ -28,6 +28,7 @@ def parse_args() -> argparse.Namespace:
 def build_model(instance: Instance) -> tuple[gp.Model, gp.tupledict[int, gp.Var]]:
     model = gp.Model("Max-SC-QBF")
     n_variables = len(instance.variable_subsets)
+    subsets = instance.variable_subsets
 
     qbf_variables = model.addVars(n_variables, vtype=GRB.BINARY, name="qbf_var")
     # Used to linearize the QBF. qbf_var_pair[i,j] = 1 means both qbf_var[i] AND qbf_var[j] are 1.
@@ -35,11 +36,11 @@ def build_model(instance: Instance) -> tuple[gp.Model, gp.tupledict[int, gp.Var]
 
     # We want to maximize the result of the Quadratic Binary Function (QBF)
     model.setObjective(
-        gp.quicksum([
+        gp.quicksum(
             qbf_variable_pairs[i,j] * instance.coefficients_matrix[i][j]
             for i in range(n_variables)
             for j in range(n_variables)
-        ]),
+        ),
         GRB.MAXIMIZE
     )
 
@@ -65,7 +66,11 @@ def build_model(instance: Instance) -> tuple[gp.Model, gp.tupledict[int, gp.Var]
         for j in range(n_variables)
     ), name="i_and_j_1_implies_ij_1")
 
-    # TODO: add constraints for set-cover
+    # Set Cover constraints, this ensures that the chosen subsets covers all variables
+    model.addConstrs((
+        gp.quicksum(qbf_variables[i] for i, Si in enumerate(subsets) if k in Si) >= 1
+        for k in range(1, n_variables + 1)      # vars goes from 1 to 25
+        ), name=f"cover_all_variables")
 
     return model, qbf_variables
 
