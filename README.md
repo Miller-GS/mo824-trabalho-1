@@ -10,7 +10,10 @@ Também são dados N conjuntos, cada um associado a uma variável. Esses conjunt
 A solução precisa maximizar a QBF e cobrir todos os elementos dos conjuntos.
 
 ## Solver
-Para utilizar o solver, abra o terminal no diretório src/solver e execute o seguinte comando:
+Para utilizar o solver:
+1. Abra o diretório src/solver
+2. Instale as dependências com `pip install -r requirements.txt`
+3. Execute o seguinte comando:
 
 ```
 python solver.py --input <caminho_para_o_arquivo_de_entrada> -v
