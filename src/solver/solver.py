@@ -1,7 +1,10 @@
 import argparse
+import logging
 import gurobipy as gp
+from pathlib import Path
 from gurobipy import GRB
 from instance import Instance
+
 
 def main() -> None:
     args = parse_args()
@@ -10,23 +13,40 @@ def main() -> None:
         print("Instance loaded:")
         print(instance)
 
-    model, qbf_variables = build_model(instance)
+    instance_name = Path(args.input).stem
+    logger, env = setup_logger(args.outdir, instance_name)
+
+    model, qbf_variables = build_model(instance, env)
 
     model.setParam(GRB.Param.TimeLimit, 600)
     model.optimize()
-    print("Solution found:")
+    logger.info("Solution found:")
     for i in range(len(instance.variable_subsets)):
-        print(f"Variable {i + 1}: {qbf_variables[i].X}")
+        logger.info(f"Variable {i + 1}: {qbf_variables[i].X}")
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Max-SC-QBF Solver")
     parser.add_argument("--input", type=str, required=True, help="Input file of the instance")
+    parser.add_argument("--outdir", type=str, required=True, help="Saves gurobi log into outdir")
     parser.add_argument("-v", "--verbose", action="store_true", help="Enable verbose output")
     return parser.parse_args()
 
-def build_model(instance: Instance) -> tuple[gp.Model, gp.tupledict[int, gp.Var]]:
-    model = gp.Model("Max-SC-QBF")
+def setup_logger(outdir: str, instance_name: str) -> logging.Logger:
+    Path(outdir).mkdir(parents=True, exist_ok=True)
+    log_path =f"{outdir}/{instance_name}.log"
+    logging.basicConfig(
+        level=logging.INFO,
+        filename=Path(log_path),
+        encoding="utf-8",
+        filemode="a",
+        format="%(asctime)s %(levelname)s %(message)s",
+    )
+    env = gp.Env(logfilename=log_path, params={"LogToConsole": 0})
+    return logging.getLogger(), env
+
+def build_model(instance: Instance, env:gp.Env) -> tuple[gp.Model, gp.tupledict[int, gp.Var]]:
+    model = gp.Model("Max-SC-QBF", env=env)
     n_variables = len(instance.variable_subsets)
     subsets = instance.variable_subsets
 

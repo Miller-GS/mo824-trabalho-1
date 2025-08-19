@@ -16,7 +16,7 @@ Para utilizar o solver:
 3. Execute o seguinte comando:
 
 ```
-python solver.py --input <caminho_para_o_arquivo_de_entrada> -v
+python solver.py --input <caminho_para_o_arquivo_de_entrada> --outdir <caminho_para_guardar_logs> -v
 ```
 
 O arquivo de entrada deve ser gerado no formato
