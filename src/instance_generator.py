@@ -5,11 +5,11 @@ outdir = Path("./instances")
 
 def generate_subsets(n, method):
     generators = {
-        1: lambda : rd.randint(1,n),
-        2: lambda : int(n * 0.2),
-        3: lambda : None            # TODO: implementar outro método
+        1: lambda i : rd.randint(1,n),
+        2: lambda i : int(n * 0.2),
+        3: lambda i : i+1,
     }
-    return [generators[method]() for _ in range(n)]
+    return [generators[method](i) for i in range(n)]
 
 
 def generate_instance(n, method, seed, id):
@@ -24,7 +24,7 @@ def generate_instance(n, method, seed, id):
     lines[1] = " ".join(str(ss) for ss in subset_dims)
     for i in range(n):
         ssd = subset_dims[i]
-        numbers = [rd.randint(1,n) for _ in range(ssd)]         # pra cada subset, gera inteiros aleatórios de 1 a n
+        numbers = rd.sample(range(1, n+1), ssd)         # pra cada subset, gera inteiros aleatórios de 1 a n
         lines[i+2] = " ".join(str(n) for n in numbers)
         all_numbers.update(numbers)
     for i in range(n):
